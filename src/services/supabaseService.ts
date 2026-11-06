@@ -23,6 +23,17 @@ function isValidUUID(id: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 }
 
+// Garante que o tipo do cliente atenda estritamente à restrição CHECK do Supabase
+function sanitizeCustomerType(type?: string): string {
+  if (!type) return 'Pessoa Física';
+  const clean = type.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (clean.includes('sacol') || clean.includes('mercado')) return 'Sacolão / Mercado';
+  if (clean.includes('restauran') || clean.includes('cozinha') || clean.includes('buffet')) return 'Restaurante';
+  if (clean.includes('feira')) return 'Cliente de Feira';
+  if (clean.includes('distrib') || clean.includes('atac')) return 'Distribuidor';
+  return 'Pessoa Física';
+}
+
 export const supabaseService = {
   // ==========================================
   // TRANSAÇÕES (Vendas e Notas de Despesas)
@@ -178,7 +189,10 @@ export const supabaseService = {
   },
 
   async insertCustomer(c: CustomerCredit): Promise<CustomerCredit | null> {
-    if (!isSupabaseConfigured || !supabase) return null;
+    if (!isSupabaseConfigured || !supabase) {
+      console.warn('Supabase não está configurado. Salvamento de cliente será apenas local.');
+      return null;
+    }
 
     try {
       const { data, error } = await supabase
@@ -186,7 +200,7 @@ export const supabaseService = {
         .insert([
           {
             customer_name: c.customerName,
-            customer_type: c.customerType,
+            customer_type: sanitizeCustomerType(c.customerType),
             customer_phone: c.customerPhone,
             total_owed: c.totalOwed,
             last_purchase_date: toISODate(c.lastPurchaseDate),
@@ -199,7 +213,7 @@ export const supabaseService = {
         .single();
 
       if (error) {
-        console.warn('Erro ao inserir cliente:', error.message);
+        console.error('Erro ao inserir cliente no Supabase:', error.message, error.details);
         return null;
       }
 
@@ -215,7 +229,8 @@ export const supabaseService = {
         recentItems: c.recentItems || [],
         historyNotes: data.history_notes,
       };
-    } catch {
+    } catch (err) {
+      console.error('Exceção ao inserir cliente no Supabase:', err);
       return null;
     }
   },
@@ -230,7 +245,7 @@ export const supabaseService = {
           .from('customers')
           .update({
             customer_name: c.customerName,
-            customer_type: c.customerType,
+            customer_type: sanitizeCustomerType(c.customerType),
             customer_phone: c.customerPhone,
             total_owed: c.totalOwed,
             last_purchase_date: toISODate(c.lastPurchaseDate),
@@ -243,7 +258,7 @@ export const supabaseService = {
         query = supabase
           .from('customers')
           .update({
-            customer_type: c.customerType,
+            customer_type: sanitizeCustomerType(c.customerType),
             customer_phone: c.customerPhone,
             total_owed: c.totalOwed,
             last_purchase_date: toISODate(c.lastPurchaseDate),

@@ -424,8 +424,10 @@ export default function App() {
     const created = await supabaseService.insertCustomer(newCred);
     if (created) {
       setCredits((prev) => prev.map((c) => (c.id === newCred.id ? created : c)));
+      showToast(`Cliente "${newCred.customerName}" salvo no Supabase! ☁️`);
+    } else {
+      showToast(`Cliente "${newCred.customerName}" salvo localmente.`);
     }
-    showToast(`Cliente ${newCred.customerName} adicionado à caderneta.`);
   };
 
   const handleUpdateCredit = (updatedCredit: CustomerCredit) => {
@@ -471,6 +473,8 @@ export default function App() {
         sunlightMode={sunlightMode}
         onToggleSunlightMode={() => setSunlightMode(!sunlightMode)}
         onOpenNewTransaction={openDrawerWith}
+        supabaseOnline={supabaseOnline}
+        loadingData={loadingData}
       />
 
       {/* Main Container */}

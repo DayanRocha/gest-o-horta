@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sprout, Sun, Wifi, Calendar, Sparkles, TrendingUp } from 'lucide-react';
+import { Sprout, Sun, Cloud, WifiOff, RefreshCw, Calendar, Sparkles, TrendingUp } from 'lucide-react';
 
 interface HeaderProps {
   selectedPeriod: string;
@@ -7,6 +7,8 @@ interface HeaderProps {
   sunlightMode: boolean;
   onToggleSunlightMode: () => void;
   onOpenNewTransaction: (type?: 'income' | 'expense') => void;
+  supabaseOnline?: boolean;
+  loadingData?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -15,17 +17,36 @@ export const Header: React.FC<HeaderProps> = ({
   sunlightMode,
   onToggleSunlightMode,
   onOpenNewTransaction,
+  supabaseOnline = false,
+  loadingData = false,
 }) => {
   return (
     <header className="sticky top-0 z-30 bg-[#FFFFFF] border-b border-[#E0E8E0] shadow-xs">
       {/* Top Banner / Field Status Info */}
       <div className="bg-[#1B5E20] text-white px-4 py-1.5 text-xs font-semibold flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="flex h-2 w-2 relative">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#91f78e] opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#91f78e]"></span>
-          </span>
-          <span className="tracking-wide">Modo Campo Operacional • Offline Ativo</span>
+          {loadingData ? (
+            <>
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#91f78e]" />
+              <span className="tracking-wide">Sincronizando com Supabase...</span>
+            </>
+          ) : supabaseOnline ? (
+            <>
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#91f78e] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#91f78e]"></span>
+              </span>
+              <span className="tracking-wide flex items-center gap-1.5">
+                <Cloud className="w-3.5 h-3.5 text-[#91f78e]" />
+                <span>Nuvem Supabase Ativa • Sincronizado</span>
+              </span>
+            </>
+          ) : (
+            <>
+              <WifiOff className="w-3.5 h-3.5 text-amber-300" />
+              <span className="tracking-wide text-amber-200">Modo Local • Sem Conexão Nuvem</span>
+            </>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <span className="text-[#90d689] hidden sm:inline">Sítio Primavera • Canoinhas/SP</span>

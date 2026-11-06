@@ -1,0 +1,6 @@
+{
+  "name": "AgroHorta - Gestão Financeira",
+  "description": "Sistema operacional de gestão financeira de alto contraste para produtores rurais, horticultores e feirantes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
